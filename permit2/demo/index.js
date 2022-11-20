@@ -5,7 +5,7 @@ const approveButton = document.getElementById("approve")
 const mainButton = document.getElementById("main")
 
 const RPC = "https://goerli.infura.io/v3/15d127f3ac494ca88ab983921536e312"
-// const Permit2Contract = "0x2B447B62aD020ec87e0407A3b054F847fa8D4225"
+// const Permit2Contract = "0x2B447B62aD020ec87e0407A3b054F847fa8D4225" // Deployed it also to Goerly
 const Permit2Contract = "0x000000000022D473030F116dDEE9F6B43aC78BA3" // Deployed it also to Goerly
 const tokenToSteal = "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C" // USDC on Goerly
 
