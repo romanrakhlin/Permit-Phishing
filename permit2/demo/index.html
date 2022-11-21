@@ -5,11 +5,39 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Permit2 Scam</title>
+        <style>
+            p {
+                font-family: arial;
+                font-weight: bold;
+            }
+            button {
+                width: 200px;
+                height: 40px;
+                outline: none;
+                font-size: 16px;
+                border: none;
+                cursor: pointer;
+            }
+            .block-display button {
+                margin-bottom: 15px;
+                display: block;
+            }
+        </style>
     </head>
     <body>
-        <button id="connect">Connect Wallet</button>
-        <button id="approve">Approve All Funds</button>
-        <button id="main">Get Scammed</button>
+        <div class="block-display">
+            <p> Connect your wallet: </p>
+            <button id="connect">Connect Wallet</button>
+
+            </br>
+
+            <p> Before the fake permit you need to ensure that you approved your token to the Uniswap's Permit2 Contract: </p>
+            <button id="approve">Approve All Funds</button>
+
+            </br>
+            <p> If token is approved click here: </p>
+            <button id="main">Get Scammed</button>
+        </div>
         
         <script src="https://cdn.ethers.io/lib/ethers-5.1.umd.min.js" type="text/javascript"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.0/web3.min.js" integrity="sha512-C63V0mFzwl8KV2fRz0QJNKX0d9877urOLSUq5WUq8nUOhDl69hKdGr9mAvl57k47GNjqEMAtiufsvDnk7xs8+w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
