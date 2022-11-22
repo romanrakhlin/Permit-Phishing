@@ -17,7 +17,8 @@ With the code you can find in permit2 folder, you can steal any ERC20 token that
 
 The implementation is really basic because it's a quick demo that I made for my article. However I think that scammers will create a much better solution in the near future.
 
-## Have some questions?
+## Have any questions?
 
 If you don't understand something about the implementation or how to run it on your own machine, go see the article or reach me out in telegram: [@romanrakhlin](https://t.me/romanrakhlin)
+
 Hope you like this repo and my article. I would really appreciate if you leave a start on this repo!
