@@ -1,7 +1,7 @@
 # Permit-Phishing
 
 This is the implementation of the fake signature scam that is potentially could be used by hackers to steal ERC20 tokens.
-Exclusivelly for my article: **********
+Exclusivelly for my article: [link (click)][https://medium.com/@romanrakhlin/the-dark-side-of-permits-eip2612-c66ff71bf635?source=friends_link&sk=45b59c5e461386fc3526e762b4610c16]
 
 **This is only for educational purposes!!**
 
